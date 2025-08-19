@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hoho 3D — Catch & Win</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --hoho-primary: #D62828;
+      --hoho-secondary: #F77F00;
+      --hoho-bg: #FFFFFF;
+      --hoho-font: 'Rubik', sans-serif;
+      --hoho-accent: #003049;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--hoho-font);
+      background-color: var(--hoho-bg);
+      color: var(--hoho-accent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    header h1 {
+      color: var(--hoho-primary);
+      font-size: 2rem;
+      margin: 0;
+    }
+
+    #game-area {
+      position: relative;
+      width: 90vw;
+      max-width: 400px;
+      height: 400px;
+      background: #eee;
+      border: 3px solid var(--hoho-secondary);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .target {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: var(--hoho-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .target:hover {
+      transform: scale(1.2);
+    }
+
+    #controls {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #controls button {
+      background-color: var(--hoho-primary);
+      color: white;
+      padding: 0.7rem 1.5rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    #controls button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #reward-select, #email-input {
+      margin-top: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    #leaderboard {
+      margin-top: 2rem;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    #leaderboard h3 {
+      text-align: center;
+      color: var(--hoho-secondary);
+    }
+
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    #leaderboard li {
+      background: #f2f2f2;
+      padding: 0.4rem;
+      margin-bottom: 0.2rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    #message {
+      margin-top: 1rem;
+      color: var(--hoho-accent);
+      font-weight: bold;
+      min-height: 1.2em;
+    }
+
+    @media (max-width: 500px) {
+      #game-area {
+        height: 300px;
+      }
+
+      .target {
+        width: 40px;
+        height: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎯 Hoho 3D — Catch & Win</h1>
+  </header>
+
+  <main>
+    <div id="game-area" role="region" aria-label="Zona de juego">
+      <!-- target injected via JS -->
+    </div>
+
+    <div id="controls">
+      <button id="start-btn" aria-label="Comenzar juego">Iniciar juego</button>
+
+      <select id="reward-select" aria-label="Seleccionar premio">
+        <option value="5%_desc">Cupón 5% Descuento</option>
+        <option value="0.25kg">Cupón 250g Filamento Gratis</option>
+      </select>
+
+      <input type="email" id="email-input" placeholder="Tu correo" aria-label="Correo electrónico"/>
+
+      <div id="message" role="alert"></div>
+    </div>
+
+    <section id="leaderboard" aria-label="Tabla de récords">
+      <h3>🏆 Mejores Tiempos</h3>
+      <ul id="leaderboard-list">
+        <!-- top times inserted via JS -->
+      </ul>
+    </section>
+  </main>
+
+  <!-- JS irá aquí luego -->
+</body>
+</html>
