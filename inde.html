@@ -147,7 +147,7 @@
 
   <main>
     <div id="game-area" role="region" aria-label="Zona de juego">
-      <!-- target injected via JS -->
+      <!-- target se genera con JS -->
     </div>
 
     <div id="controls">
@@ -166,11 +166,175 @@
     <section id="leaderboard" aria-label="Tabla de récords">
       <h3>🏆 Mejores Tiempos</h3>
       <ul id="leaderboard-list">
-        <!-- top times inserted via JS -->
+        <!-- tiempos con JS -->
       </ul>
     </section>
   </main>
 
-  <!-- JS irá aquí luego -->
+  <script>
+  (() => {
+    // =============================
+    // 🎮 Lógica del Juego
+    // =============================
+    const game = (() => {
+      let target = null;
+      let startTime = 0;
+      let cooldown = false;
+      const COOLDOWN_TIME = 60000;
+      const MAX_LEADERBOARD = 5;
+
+      const gameArea = document.getElementById("game-area");
+      const startBtn = document.getElementById("start-btn");
+      const messageEl = document.getElementById("message");
+      const leaderboardEl = document.getElementById("leaderboard-list");
+      const emailInput = document.getElementById("email-input");
+      const rewardSelect = document.getElementById("reward-select");
+
+      function start() {
+        if (cooldown) {
+          showMessage("🕑 Espera 1 minuto entre intentos.");
+          return;
+        }
+
+        clearTarget();
+        spawnTarget();
+        startTime = Date.now();
+        showMessage("¡Atrápalo!");
+        hohoTrack("game_start", {});
+      }
+
+      function spawnTarget() {
+        target = document.createElement("div");
+        target.className = "target";
+        target.setAttribute("role", "button");
+        target.setAttribute("aria-label", "Objetivo del juego");
+
+        const x = Math.random() * (gameArea.clientWidth - 50);
+        const y = Math.random() * (gameArea.clientHeight - 50);
+        target.style.left = `${x}px`;
+        target.style.top = `${y}px`;
+
+        target.addEventListener("click", win);
+        gameArea.appendChild(target);
+      }
+
+      function clearTarget() {
+        if (target) {
+          target.remove();
+          target = null;
+        }
+      }
+
+      function win() {
+        const time = (Date.now() - startTime) / 1000;
+        clearTarget();
+        showMessage(`🎉 ¡Lo atrapaste en ${time.toFixed(2)}s!`);
+        hohoTrack("game_win", { time });
+
+        updateLeaderboard(time);
+        const email = emailInput.value.trim();
+        if (validateEmail(email)) {
+          sendCoupon(email, rewardSelect.value, time);
+        } else {
+          showMessage("Por favor, ingresa un correo válido para recibir tu cupón.");
+        }
+
+        applyCooldown();
+      }
+
+      function updateLeaderboard(time) {
+        const scores = getLeaderboard();
+        scores.push(time);
+        scores.sort((a, b) => a - b);
+        const top = scores.slice(0, MAX_LEADERBOARD);
+        localStorage.setItem("hoho3d_leaderboard", JSON.stringify(top));
+        renderLeaderboard();
+      }
+
+      function getLeaderboard() {
+        return JSON.parse(localStorage.getItem("hoho3d_leaderboard")) || [];
+      }
+
+      function renderLeaderboard() {
+        const scores = getLeaderboard();
+        leaderboardEl.innerHTML = "";
+        scores.forEach((t, i) => {
+          const li = document.createElement("li");
+          li.textContent = `${i + 1}. ${t.toFixed(2)}s`;
+          leaderboardEl.appendChild(li);
+        });
+      }
+
+      function applyCooldown() {
+        cooldown = true;
+        startBtn.disabled = true;
+        setTimeout(() => {
+          cooldown = false;
+          startBtn.disabled = false;
+          showMessage("Listo para otro intento.");
+        }, COOLDOWN_TIME);
+      }
+
+      function showMessage(msg) {
+        messageEl.textContent = msg;
+      }
+
+      return {
+        init: () => {
+          renderLeaderboard();
+          startBtn.addEventListener("click", start);
+        }
+      };
+    })();
+
+    // =============================
+    // 📩 Validación de Email
+    // =============================
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    // =============================
+    // 📈 Analítica personalizada
+    // =============================
+    window.hohoTrack = function(eventName, payload) {
+      console.log(`[Analytics] ${eventName}`, payload);
+      // window.gtag?.('event', eventName, payload); // Activar si usas GA4
+    };
+
+    // =============================
+    // 🧾 Solicitud de Cupón (JSONP)
+    // =============================
+    function sendCoupon(email, reward, time) {
+      const token = "hoho3d_secret_token"; // 👈 Cámbialo en producción
+      const url = `https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec` +
+        `?callback=handleCouponResponse&email=${encodeURIComponent(email)}` +
+        `&reward=${encodeURIComponent(reward)}&time=${time.toFixed(2)}` +
+        `&token=${token}`;
+
+      const script = document.createElement("script");
+      script.src = url;
+      document.body.appendChild(script);
+
+      hohoTrack("coupon_requested", { email, reward });
+    }
+
+    window.handleCouponResponse = function(response) {
+      if (response.status === "ok") {
+        document.getElementById("message").textContent = `🎁 Cupón enviado: ${response.coupon}`;
+        hohoTrack("coupon_sent", { coupon: response.coupon });
+      } else {
+        document.getElementById("message").textContent = `⚠️ ${response.message}`;
+        hohoTrack("coupon_failed", { reason: response.message });
+      }
+    };
+
+    // =============================
+    // 🚀 Inicializar Juego
+    // =============================
+    document.addEventListener("DOMContentLoaded", game.init);
+  })();
+  </script>
 </body>
 </html>
